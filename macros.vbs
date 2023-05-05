@@ -1,54 +1,30 @@
 Sub macros()
-    Dim lastRow As Long
-    Dim i As Long
-    Dim currentValue As String
-    Dim total As Double
-    Dim deleteRange As Range
-    Dim rowIndex As Long
+
+Dim lRow As Long, lRow2 As Long, lRow3 As Long
+Dim sName As String, sParam As String, sOrg As String
+Dim sSum As String
+
+Application.ScreenUpdating = False
+
+lRow = Cells(Rows.Count, 1).End(xlUp).Row
+
+For lRow2 = lRow To 2 Step -1
+    sName = Cells(lRow2, 2).Value
+    sParam = Cells(lRow2, 3).Value
+    sOrg = Cells(lRow2, 4).Value
+    sSum = Cells(lRow2, 5).Value
     
-    ' Находим последнюю строку в таблице
-    lastRow = Cells(Rows.Count, "A").End(xlUp).Row
-    
-    ' Сортируем диапазон данных по столбцу B, затем по столбцу C, затем по столбцу D
-    Range("A1:E" & lastRow).Sort key1:=Range("B2"), order1:=xlAscending, key2:=Range("C2"), order2:=xlAscending, key3:=Range("D2"), order3:=xlAscending, Header:=xlYes
-
-    ' Проходимся по каждой строке и считаем сумму значений в столбце E для одинаковых значений в столбцах B, C и D
-    currentValue = Cells(2, "B").Value & Cells(2, "C").Value & Cells(2, "D").Value
-    total = Cells(2, "E").Value
-    rowIndex = 2 ' Используется для запоминания строки последней обработанной группы
-
-    For i = 3 To lastRow
-        If Cells(i, "B").Value & Cells(i, "C").Value & Cells(i, "D").Value = currentValue Then
-            total = total + Cells(i, "E").Value
-            ' Удаляем строку если значения в столбцах B, C и D совпадают
-            If deleteRange Is Nothing Then
-                Set deleteRange = Cells(i, "A").EntireRow
-            Else
-                Set deleteRange = Union(deleteRange, Cells(i, "A").EntireRow)
-            End If
-        Else
-            ' Записываем номер строки, сумму и значение в столбцы A, E соответственно
-            Cells(rowIndex, "A").Value = rowIndex - 1
-            Cells(rowIndex, "E").Value = total
-
-            ' Обновляем значения для текущей группы
-            currentValue = Cells(i, "B").Value & Cells(i, "C").Value & Cells(i, "D").Value
-            total = Cells(i, "E").Value
-            rowIndex = i
-            
-            ' Объединяем ячейки со значениями и выравниваем содержимое по центру
-            Range("E" & rowIndex - 1).Value = total
-            Range("E" & rowIndex - 1).HorizontalAlignment = xlCenter
+    For lRow3 = lRow2 - 1 To 2 Step -1
+        If sName = Cells(lRow3, 2).Value And sParam = Cells(lRow3, 3).Value And sOrg = Cells(lRow3, 4).Value Then
+            Cells(lRow3, 5).Value = Cells(lRow3, 5).Value + sSum
+            Rows(lRow2).Delete
+            Exit For
         End If
-    Next i
-    
-    ' Удаляем последнюю группу
-    If Not deleteRange Is Nothing Then
-        deleteRange.Delete Shift:=xlUp
-    End If
+    Next lRow3
+Next lRow2
 
-    ' Пронумеруем строки начиная со второй строки после сортировки
-    For i = 2 To lastRow - 1
-        Cells(i, "A").Value = i - 1
-    Next i
+Application.ScreenUpdating = True
+Selection.HorizontalAlignment = xlCenter
+Selection.VerticalAlignment = xlCenter
+
 End Sub
